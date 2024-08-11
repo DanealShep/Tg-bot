@@ -1,0 +1,590 @@
+<html>
+<head>
+<title>main.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cc7832;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #808080;}
+.s3 { color: #6897bb;}
+.s4 { color: #6a8759;}
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+main.py</font>
+</center></td></tr></table>
+<pre><span class="s0">import </span><span class="s1">PRICE</span>
+<span class="s0">import </span><span class="s1">payments </span><span class="s0">as </span><span class="s1">payments</span>
+<span class="s0">import </span><span class="s1">texts</span>
+<span class="s0">from </span><span class="s1">aiogram.dispatcher.filters </span><span class="s0">import </span><span class="s1">IDFilter</span>
+<span class="s0">from </span><span class="s1">telebot.apihelper </span><span class="s0">import </span><span class="s1">unban_chat_member</span>
+
+<span class="s0">import </span><span class="s1">config  </span><span class="s2"># добавить файл config</span>
+<span class="s0">import </span><span class="s1">logging  </span><span class="s2"># добавить модуль logging</span>
+<span class="s0">import </span><span class="s1">time</span>
+<span class="s0">from </span><span class="s1">aiogram.utils </span><span class="s0">import </span><span class="s1">executor</span>
+<span class="s0">import </span><span class="s1">sqlite3</span>
+<span class="s0">from </span><span class="s1">aiogram </span><span class="s0">import </span><span class="s1">*</span>
+<span class="s0">from </span><span class="s1">aiogram.types </span><span class="s0">import </span><span class="s1">*</span>
+<span class="s0">from </span><span class="s1">aiogram.types </span><span class="s0">import </span><span class="s1">message</span>
+<span class="s0">import </span><span class="s1">datetime</span>
+<span class="s0">from </span><span class="s1">datetime </span><span class="s0">import </span><span class="s1">datetime</span><span class="s0">, </span><span class="s1">timedelta</span>
+<span class="s0">import </span><span class="s1">asyncio</span>
+
+
+
+<span class="s2">#aipgram , список . (aiogram.types) - серая папка</span>
+<span class="s2">#(aiogram.types.user) - фаул пайтон. Можно пропускать название списка</span>
+<span class="s2">#aiogram.types.callback_query</span>
+
+<span class="s2"># log</span>
+<span class="s1">logging.basicConfig(level=logging.INFO)</span>
+
+<span class="s2"># init</span>
+<span class="s1">bot = Bot(token=config.TOKEN)</span>
+<span class="s1">dp = Dispatcher(bot)</span>
+<span class="s1">wm = texts.welcometext</span>
+<span class="s1">ht = texts.helptext</span>
+<span class="s1">ut = texts.User_agreement</span>
+<span class="s1">st = texts.status</span>
+
+<span class="s2">#бан для новых пользователей</span>
+<span class="s2">#пользователь входит в чат (его нет в базе данных)</span>
+<span class="s2">#хендлер принимает пользователя, который зашёл</span>
+<span class="s2"># сканирует всех</span>
+<span class="s2"># те, кто зашёл - вытаскиваем их id и сверяем с базой данных</span>
+
+
+
+
+
+
+
+
+<span class="s0">async def </span><span class="s1">kr():</span>
+    <span class="s0">while True</span><span class="s1">:</span>
+        <span class="s0">if </span><span class="s3">1 </span><span class="s1">== </span><span class="s3">1</span><span class="s1">:</span>
+            <span class="s1">connect = sqlite3.connect(</span><span class="s4">&quot;Datas.db&quot;</span><span class="s1">)</span>
+            <span class="s1">cursor = connect.cursor()</span>
+            <span class="s1">dn = datetime.now()</span>
+            <span class="s1">cursor.execute(</span><span class="s4">f&quot;SELECT ban_id FROM ban_users&quot;</span><span class="s1">)</span>
+            <span class="s1">ban_db = cursor.fetchall()</span>
+            <span class="s1">print(ban_db)</span>
+            <span class="s0">for </span><span class="s1">a </span><span class="s0">in </span><span class="s1">ban_db:</span>
+                    <span class="s1">print(a)</span>
+                    <span class="s0">for </span><span class="s1">b </span><span class="s0">in </span><span class="s1">a:</span>
+                        <span class="s1">print(b)</span>
+                        <span class="s1">cursor.execute(</span>
+                                <span class="s4">f&quot;SELECT tg_users_id, Subs_status, DATE_of_end_subs FROM users WHERE tg_users_id = </span><span class="s0">{</span><span class="s1">b</span><span class="s0">}</span><span class="s4">&quot;</span><span class="s1">)  </span><span class="s2"># если забаненный пользователь</span>
+                        <span class="s1">main_db = cursor.fetchone()</span>
+                        <span class="s1">print(main_db)</span>
+
+                        <span class="s0">if not </span><span class="s1">(main_db </span><span class="s0">is None</span><span class="s1">):</span>
+                            <span class="s0">if not </span><span class="s1">(main_db[</span><span class="s3">1</span><span class="s1">] </span><span class="s0">is None</span><span class="s1">):</span>
+                                <span class="s0">if </span><span class="s1">main_db[</span><span class="s3">1</span><span class="s1">] == bool(</span><span class="s3">0</span><span class="s1">):</span>
+                                    <span class="s1">print(</span><span class="s4">&quot;забаненный пользователь вошёл в бота&quot;</span><span class="s1">)</span>
+                                    <span class="s0">if not </span><span class="s1">(datetime.strptime(main_db[</span><span class="s3">2</span><span class="s1">]</span><span class="s0">, </span><span class="s4">'%Y-%m-%d %H:%M:%S.%f'</span><span class="s1">)) </span><span class="s0">is None</span><span class="s1">:</span>
+                                        <span class="s0">if </span><span class="s1">datetime.strptime(main_db[</span><span class="s3">2</span><span class="s1">]</span><span class="s0">, </span><span class="s4">'%Y-%m-%d %H:%M:%S.%f'</span><span class="s1">) &gt;= dn:</span>
+                                            <span class="s1">print(</span><span class="s4">&quot;з.п приобрёл подписку и будет разбанен&quot;</span><span class="s1">)</span>
+
+            <span class="s1">connect.close()</span>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<span class="s2"># БАН ВОШЕДШИХ ПОЛЬЗОВАТЕЛЕЙ</span>
+<span class="s1">@dp.message_handler(content_types=</span><span class="s4">&quot;new_chat_members&quot;</span><span class="s1">)</span>
+<span class="s0">async def </span><span class="s1">join_chat_members(message: types.Message):</span>
+    <span class="s1">connect = sqlite3.connect(</span><span class="s4">&quot;Datas.db&quot;</span><span class="s1">)</span>
+    <span class="s1">cursor = connect.cursor()</span>
+    <span class="s1">ucd = message.new_chat_members[</span><span class="s3">0</span><span class="s1">].id       </span><span class="s2">#user_chat_id = ucd</span>
+    <span class="s1">print(ucd)</span>
+    <span class="s1">cursor.execute(</span><span class="s4">f&quot;SELECT tg_users_id, Subs_status, DATE_of_end_subs FROM users WHERE tg_users_id = </span><span class="s0">{</span><span class="s1">ucd</span><span class="s0">}</span><span class="s4">&quot;</span><span class="s1">)</span>
+    <span class="s1">stroka = cursor.fetchone()</span>
+    <span class="s1">dn = datetime.now() </span><span class="s2">#dn datetime now</span>
+    <span class="s0">if </span><span class="s1">stroka </span><span class="s0">is None</span><span class="s1">: </span><span class="s2"># Если его нет в базе данных(значит кто-то скинул ему ссылку)</span>
+        <span class="s0">await </span><span class="s1">bot.ban_chat_member(chat_id=config.GROUP_ID</span><span class="s0">, </span><span class="s1">user_id=ucd)</span>
+        <span class="s1">cursor.execute(</span><span class="s4">&quot;&quot;&quot;INSERT INTO ban_users(ban_id) VALUES (?)&quot;&quot;&quot;</span><span class="s0">, </span><span class="s1">(</span><span class="s4">f&quot;</span><span class="s0">{</span><span class="s1">ucd</span><span class="s0">}</span><span class="s4">&quot;</span><span class="s0">,</span><span class="s1">))</span>
+        <span class="s1">print(</span><span class="s4">&quot;пользователя нет. Он будет забанен&quot;</span><span class="s1">)</span>
+    <span class="s0">elif </span><span class="s1">stroka[</span><span class="s3">0</span><span class="s1">] == ucd </span><span class="s0">and </span><span class="s1">(datetime.strptime(stroka[</span><span class="s3">2</span><span class="s1">]</span><span class="s0">, </span><span class="s4">'%Y-%m-%d %H:%M:%S.%f'</span><span class="s1">) &lt;= dn </span><span class="s0">or </span><span class="s1">stroka[</span><span class="s3">2</span><span class="s1">] </span><span class="s0">is None</span><span class="s1">): </span><span class="s2">#Если он есть в базе данных, но нет подписки или она просрочена(просто зашёл в бота и перешёл по ссылке)</span>
+        <span class="s0">await </span><span class="s1">bot.ban_chat_member(chat_id=config.GROUP_ID</span><span class="s0">, </span><span class="s1">user_id=ucd)</span>
+        <span class="s1">cursor.execute(</span><span class="s4">&quot;&quot;&quot;INSERT INTO ban_users(ban_id) VALUES (?)&quot;&quot;&quot;</span><span class="s0">, </span><span class="s1">(</span><span class="s4">f&quot;</span><span class="s0">{</span><span class="s1">ucd</span><span class="s0">}</span><span class="s4">&quot;</span><span class="s0">,</span><span class="s1">))</span>
+        <span class="s1">print(</span><span class="s4">&quot;пользователь есть в базе данных. У него нет подписки или она просрочена&quot;</span><span class="s1">)</span>
+
+    <span class="s1">connect.commit()</span>
+    <span class="s1">connect.close()</span>
+
+<span class="s2"># блокировка по истечению подписки для тех, кто оплачивал подписку и её срок истёк.</span>
+<span class="s0">async def </span><span class="s1">kr1():</span>
+    <span class="s0">while True</span><span class="s1">:</span>
+        <span class="s0">if </span><span class="s3">1 </span><span class="s1">== </span><span class="s3">1</span><span class="s1">:</span>
+            <span class="s1">connect = sqlite3.connect(</span><span class="s4">&quot;Datas.db&quot;</span><span class="s1">)</span>
+            <span class="s1">cursor = connect.cursor()</span>
+            <span class="s1">cursor.execute(</span><span class="s4">f&quot;SELECT tg_users_id, Subs_status, DATE_of_end_subs FROM users WHERE Subs_status = </span><span class="s0">{</span><span class="s1">bool(</span><span class="s3">1</span><span class="s1">)</span><span class="s0">}</span><span class="s4">&quot;</span><span class="s1">)</span>
+            <span class="s1">old_db = cursor.fetchall()</span>
+            <span class="s1">dm = datetime.now()</span>
+            <span class="s1">print(old_db)</span>
+            <span class="s0">for </span><span class="s1">c </span><span class="s0">in </span><span class="s1">old_db:                        </span><span class="s2"># из строк мы выбираем где есть подписка (1)</span>
+                <span class="s1">print(c)</span>
+                <span class="s1">print(c[</span><span class="s3">2</span><span class="s1">])</span>
+
+                <span class="s0">if </span><span class="s1">datetime.strptime(c[</span><span class="s3">2</span><span class="s1">]</span><span class="s0">, </span><span class="s4">'%Y-%m-%d %H:%M:%S.%f'</span><span class="s1">) &lt;= dm :</span>
+                    <span class="s1">cursor.execute(</span><span class="s4">f&quot;UPDATE users SET Subs_status = </span><span class="s0">{</span><span class="s1">bool(</span><span class="s3">0</span><span class="s1">)</span><span class="s0">} </span><span class="s4">WHERE Subs_status = </span><span class="s0">{</span><span class="s1">bool(</span><span class="s3">1</span><span class="s1">)</span><span class="s0">} </span><span class="s4">and DATE_of_end_subs =</span><span class="s0">{</span><span class="s1">datetime.strptime(c[</span><span class="s3">2</span><span class="s1">]</span><span class="s0">, </span><span class="s4">'%Y-%m-%d %H:%M:%S.%f'</span><span class="s1">)</span><span class="s0">}</span><span class="s4">&quot;</span><span class="s1">)</span>
+                    <span class="s1">print(</span><span class="s4">&quot;у пользователя кончилась подписка&quot;</span><span class="s1">)</span>
+
+            <span class="s1">connect.commit()</span>
+            <span class="s1">connect.close()</span>
+
+
+<span class="s2">#Условия разбана для старых, у кого подписка истекла, но решили продлить.</span>
+<span class="s0">async def </span><span class="s1">kr2():</span>
+    <span class="s0">while True</span><span class="s1">:</span>
+        <span class="s0">if </span><span class="s3">1 </span><span class="s1">== </span><span class="s3">1</span><span class="s1">:</span>
+            <span class="s1">connect = sqlite3.connect(</span><span class="s4">&quot;Datas.db&quot;</span><span class="s1">)</span>
+            <span class="s1">cursor = connect.cursor()</span>
+
+            <span class="s1">cursor.execute(</span><span class="s4">f&quot;SELECT tg_users_id, Subs_status, DATE_of_end_subs FROM users WHERE Subs_status = </span><span class="s0">{</span><span class="s1">bool(</span><span class="s3">1</span><span class="s1">)</span><span class="s0">}</span><span class="s4">&quot;</span><span class="s1">)</span>
+            <span class="s1">old1_db = cursor.fetchall()</span>
+            <span class="s1">dl = datetime.now()</span>
+            <span class="s0">for </span><span class="s1">e </span><span class="s0">in </span><span class="s1">old1_db:</span>
+                <span class="s0">if </span><span class="s1">datetime.strptime(e[</span><span class="s3">2</span><span class="s1">]</span><span class="s0">, </span><span class="s4">'%Y-%m-%d %H:%M:%S.%f'</span><span class="s1">) &gt;= dl:</span>
+                    <span class="s1">print(</span><span class="s4">&quot;Пользователь в чате продлил подписку - разбанить&quot;</span><span class="s1">)</span>
+
+            <span class="s1">connect.close()</span>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<span class="s2"># Меню</span>
+<span class="s1">@dp.message_handler(commands=[</span><span class="s4">'start'</span><span class="s1">])</span>
+<span class="s0">async def </span><span class="s1">cmd_handler(message: types.Message):</span>
+    <span class="s0">if not </span><span class="s1">message.chat.type == </span><span class="s4">'private' </span><span class="s1">:</span>
+
+        <span class="s0">pass</span>
+        <span class="s0">await </span><span class="s1">message.bot.delete_message(chat_id=config.GROUP_ID</span><span class="s0">, </span><span class="s1">message_id=message.message_id) </span><span class="s2">#удаление сообщений бота из группового чата</span>
+
+    <span class="s0">else</span><span class="s1">:</span>
+
+        <span class="s0">await </span><span class="s1">message.answer(</span>
+            <span class="s4">&quot;Приветствуем тебя, {0.first_name} !👋&quot;</span><span class="s1">.format(message.from_user</span><span class="s0">, </span><span class="s1">bot.get_me())</span><span class="s0">,</span>
+            <span class="s1">parse_mode=</span><span class="s4">'html'</span><span class="s1">)</span>
+        <span class="s1">time.sleep(</span><span class="s3">2.0</span><span class="s1">)</span>
+
+
+
+
+
+       <span class="s2"># base data</span>
+        <span class="s1">connect = sqlite3.connect(</span><span class="s4">&quot;Datas.db&quot;</span><span class="s1">)</span>
+        <span class="s1">cursor = connect.cursor()</span>
+
+
+        <span class="s1">user_id = message.from_user.id</span>
+        <span class="s1">user_name = message.from_user.username</span>
+        <span class="s1">user_firstname = message.from_user.first_name</span>
+
+        <span class="s1">cursor.execute(</span><span class="s4">f&quot;SELECT tg_users_id FROM users WHERE tg_users_id=</span><span class="s0">{</span><span class="s1">user_id</span><span class="s0">}</span><span class="s4">&quot;</span><span class="s1">)</span>
+        <span class="s1">data = cursor.fetchone()</span>
+        <span class="s0">if </span><span class="s1">data </span><span class="s0">is None</span><span class="s1">:</span>
+            <span class="s1">user_id = message.from_user.id</span>
+            <span class="s1">user_name = message.from_user.username</span>
+            <span class="s1">user_firstname = message.from_user.first_name</span>
+
+            <span class="s1">cursor.execute(</span><span class="s4">&quot;&quot;&quot;INSERT INTO users  
+            (tg_users_id, users_name, users_firstname) 
+            VALUES (?, ?, ?)&quot;&quot;&quot;</span><span class="s0">,</span><span class="s1">(</span><span class="s4">f&quot;</span><span class="s0">{</span><span class="s1">user_id</span><span class="s0">}</span><span class="s4">&quot;</span><span class="s0">, </span><span class="s4">&quot;@&quot; </span><span class="s1">+ </span><span class="s4">f&quot;</span><span class="s0">{</span><span class="s1">user_name</span><span class="s0">}</span><span class="s4">&quot;</span><span class="s0">, </span><span class="s4">f&quot;</span><span class="s0">{</span><span class="s1">user_firstname</span><span class="s0">}</span><span class="s4">&quot;</span><span class="s1">)) </span><span class="s2"># ? - плейсхолдеры. Просто занимают место, а в них летят функции f' #столбцы таблицы</span>
+
+        <span class="s0">else</span><span class="s1">:</span>
+            <span class="s1">user_id = message.from_user.id</span>
+            <span class="s1">user_name = message.from_user.username</span>
+            <span class="s1">user_firstname = message.from_user.first_name</span>
+            <span class="s1">cursor.execute(</span><span class="s4">f&quot;&quot;&quot;UPDATE users SET users_name = '</span><span class="s0">{</span><span class="s4">&quot;@&quot;</span><span class="s1">+user_name</span><span class="s0">}</span><span class="s4">', users_firstname = '</span><span class="s0">{</span><span class="s1">user_firstname</span><span class="s0">}</span><span class="s4">'</span>
+            <span class="s4">WHERE tg_users_id = '</span><span class="s0">{</span><span class="s1">user_id</span><span class="s0">}</span><span class="s4">' AND (users_name &lt;&gt; '</span><span class="s0">{</span><span class="s4">&quot;@&quot;</span><span class="s1">+user_name</span><span class="s0">}</span><span class="s4">' </span>
+            <span class="s4">OR users_firstname &lt;&gt; '</span><span class="s0">{</span><span class="s1">user_firstname</span><span class="s0">}</span><span class="s4">') &quot;&quot;&quot;</span><span class="s1">)</span>
+
+
+        <span class="s1">connect.commit()</span>
+        <span class="s1">connect.close()</span>
+
+
+
+        <span class="s1">markup = types.InlineKeyboardMarkup(row_width=</span><span class="s3">1</span><span class="s1">)</span>
+        <span class="s1">item = types.InlineKeyboardButton(</span><span class="s4">'Тех.поддержка 🙋'</span><span class="s0">, </span><span class="s1">callback_data=</span><span class="s4">'help'</span><span class="s1">)</span>
+        <span class="s1">item2 = types.InlineKeyboardButton(</span><span class="s4">&quot;Оплата 💳&quot;</span><span class="s0">, </span><span class="s1">callback_data=</span><span class="s4">'buymenu'</span><span class="s1">)</span>
+        <span class="s1">item3 = types.InlineKeyboardButton(</span><span class="s4">&quot;Условия подписки 📑&quot;</span><span class="s0">, </span><span class="s1">callback_data=</span><span class="s4">&quot;subscription info&quot;</span><span class="s1">)</span>
+        <span class="s1">itemm = types.InlineKeyboardButton(</span><span class="s4">&quot;Статус подписки&quot;</span><span class="s0">, </span><span class="s1">callback_data=</span><span class="s4">'status'</span><span class="s1">)</span>
+        <span class="s1">markup.add(item2</span><span class="s0">, </span><span class="s1">item3</span><span class="s0">, </span><span class="s1">item</span><span class="s0">, </span><span class="s1">itemm)</span>
+        <span class="s0">await </span><span class="s1">message.answer( wm</span><span class="s0">, </span><span class="s1">reply_markup=markup)  </span><span class="s2"># wm Приветственный текст</span>
+
+
+<span class="s1">@dp.callback_query_handler(</span><span class="s0">lambda </span><span class="s1">call: </span><span class="s0">True</span><span class="s1">)</span>
+<span class="s0">async def </span><span class="s1">answe(call: CallbackQuery):</span>
+    <span class="s2"># Тех.поддержка</span>
+    <span class="s0">if </span><span class="s1">call.data == </span><span class="s4">'help'</span><span class="s1">:</span>
+        <span class="s1">markupmenuT = types.InlineKeyboardMarkup(resize_keyboard=</span><span class="s0">True</span><span class="s1">)</span>
+        <span class="s1">FAQT = types.KeyboardButton(</span><span class="s4">&quot;FAQ ❓&quot;</span><span class="s0">, </span><span class="s1">callback_data=</span><span class="s4">&quot;FAQ&quot;</span><span class="s1">)</span>
+        <span class="s1">helpT = types.KeyboardButton(</span><span class="s4">&quot;Поддержка 🎧&quot;</span><span class="s0">, </span><span class="s1">callback_data=</span><span class="s4">&quot;writeadmin&quot;</span><span class="s1">)</span>
+        <span class="s1">bkT = types.KeyboardButton(</span><span class="s4">'⬅'</span><span class="s0">, </span><span class="s1">callback_data=</span><span class="s4">'backt1'</span><span class="s1">)</span>
+        <span class="s1">markupmenuT.add(FAQT</span><span class="s0">, </span><span class="s1">helpT</span><span class="s0">, </span><span class="s1">bkT)</span>
+        <span class="s0">await </span><span class="s1">call.message.answer(ht</span><span class="s0">, </span><span class="s1">reply_markup=markupmenuT)</span>
+    <span class="s0">elif </span><span class="s1">call.data == </span><span class="s4">'backt1'</span><span class="s1">:</span>
+        <span class="s0">await </span><span class="s1">call.message.delete()</span>
+
+        <span class="s2"># Условия подписки</span>
+    <span class="s0">if </span><span class="s1">call.data == </span><span class="s4">'subscription info'</span><span class="s1">:</span>
+        <span class="s1">markupmenuS = types.InlineKeyboardMarkup(resize_keyboard=</span><span class="s0">True</span><span class="s1">)</span>
+        <span class="s1">bks = types.KeyboardButton(</span><span class="s4">'⬅'</span><span class="s0">, </span><span class="s1">callback_data=</span><span class="s4">'backt1'</span><span class="s1">)</span>
+        <span class="s1">markupmenuS.add(bks)</span>
+        <span class="s0">await </span><span class="s1">call.message.answer(</span>
+                                  <span class="s1">ut</span><span class="s0">,</span>
+                                  <span class="s1">reply_markup=markupmenuS)</span>
+    <span class="s0">elif </span><span class="s1">call.data == </span><span class="s4">'backt1'</span><span class="s1">:</span>
+        <span class="s0">await </span><span class="s1">call.message.delete()</span>
+
+
+        <span class="s2"># Статус подписки</span>
+    <span class="s0">if </span><span class="s1">call.data == </span><span class="s4">'status'</span><span class="s1">:</span>
+        <span class="s1">markupmenuC = types.InlineKeyboardMarkup(resize_keyboard=</span><span class="s0">True</span><span class="s1">)</span>
+        <span class="s1">bkC = types.KeyboardButton(</span><span class="s4">'⬅'</span><span class="s0">, </span><span class="s1">callback_data=</span><span class="s4">'backC'</span><span class="s1">)</span>
+        <span class="s1">markupmenuC.add(bkC)</span>
+
+        <span class="s1">connect = sqlite3.connect(</span><span class="s4">&quot;Datas.db&quot;</span><span class="s1">)</span>
+        <span class="s1">cursor = connect.cursor()</span>
+
+        <span class="s1">cursor.execute(</span><span class="s4">&quot;SELECT * FROM users&quot;</span><span class="s1">)</span>
+        <span class="s0">for </span><span class="s1">person </span><span class="s0">in </span><span class="s1">cursor.fetchall():</span>
+            <span class="s1">print(</span><span class="s4">f&quot;</span><span class="s0">{</span><span class="s1">person[</span><span class="s3">0</span><span class="s1">]</span><span class="s0">} </span><span class="s4">- </span><span class="s0">{</span><span class="s1">person[</span><span class="s3">1</span><span class="s1">]</span><span class="s0">}</span><span class="s4">&quot;</span><span class="s1">)</span>
+
+        <span class="s1">connect.commit()</span>
+        <span class="s1">connect.close()</span>
+
+
+        <span class="s0">await </span><span class="s1">call.message.answer(</span><span class="s4">&quot;Клиент {0.first_name}&quot;</span><span class="s1">.format(call.from_user</span><span class="s0">, </span><span class="s1">bot.get_me()) + st</span><span class="s0">, </span><span class="s1">parse_mode=</span><span class="s4">'html'</span><span class="s0">, </span><span class="s1">reply_markup=markupmenuC)</span>
+    <span class="s0">elif </span><span class="s1">call.data == </span><span class="s4">'backC'</span><span class="s1">:</span>
+        <span class="s0">await </span><span class="s1">call.message.delete()</span>
+
+        <span class="s2"># Покупное меню (оплата)</span>
+    <span class="s0">if </span><span class="s1">call.data == </span><span class="s4">'buymenu'</span><span class="s1">:</span>
+        <span class="s1">markupmenuw = types.InlineKeyboardMarkup(resize_keyboard=</span><span class="s0">True</span><span class="s1">)</span>
+        <span class="s1">bt1 = types.KeyboardButton(</span><span class="s4">&quot; 1 месяц &quot;</span><span class="s0">, </span><span class="s1">callback_data=</span><span class="s4">&quot;buytime1&quot;</span><span class="s1">)</span>
+        <span class="s1">bt3 = types.KeyboardButton(</span><span class="s4">&quot; 3 месяца &quot;</span><span class="s0">, </span><span class="s1">callback_data=</span><span class="s4">&quot;buytime3&quot;</span><span class="s1">)</span>
+        <span class="s1">bt6 = types.KeyboardButton(</span><span class="s4">&quot; 6 месяцев &quot;</span><span class="s0">, </span><span class="s1">callback_data=</span><span class="s4">&quot;buytime6&quot;</span><span class="s1">)</span>
+        <span class="s1">bk = types.KeyboardButton(</span><span class="s4">'⬅'</span><span class="s0">, </span><span class="s1">callback_data=</span><span class="s4">'back'</span><span class="s1">)</span>
+        <span class="s1">markupmenuw.add(bt1</span><span class="s0">, </span><span class="s1">bt3</span><span class="s0">, </span><span class="s1">bt6</span><span class="s0">, </span><span class="s1">bk)</span>
+        <span class="s0">await </span><span class="s1">call.message.answer(</span><span class="s4">&quot;Выберите время действия подписки&quot;</span><span class="s0">, </span><span class="s1">reply_markup=markupmenuw)</span>
+    <span class="s0">elif </span><span class="s1">call.data == </span><span class="s4">'back'</span><span class="s1">:</span>
+        <span class="s0">await </span><span class="s1">call.message.delete()</span>
+
+        <span class="s2"># 1 месяц подписки</span>
+    <span class="s0">if </span><span class="s1">call.data == </span><span class="s4">'buytime1'</span><span class="s1">:</span>
+        <span class="s1">markupmenu1 = types.InlineKeyboardMarkup(resize_keyboard=</span><span class="s0">True</span><span class="s1">)</span>
+        <span class="s1">rub = types.KeyboardButton(</span><span class="s4">&quot;Рубли&quot;</span><span class="s0">, </span><span class="s1">callback_data=</span><span class="s4">&quot;rub1&quot;</span><span class="s1">)</span>
+        <span class="s1">eur = types.KeyboardButton(</span><span class="s4">&quot;Евро&quot;</span><span class="s0">, </span><span class="s1">callback_data=</span><span class="s4">&quot;eur1&quot;</span><span class="s1">)</span>
+        <span class="s1">bk = types.KeyboardButton(</span><span class="s4">'⬅'</span><span class="s0">, </span><span class="s1">callback_data=</span><span class="s4">'back1'</span><span class="s1">)</span>
+        <span class="s1">markupmenu1.add(rub</span><span class="s0">, </span><span class="s1">eur</span><span class="s0">, </span><span class="s1">bk)</span>
+        <span class="s0">await </span><span class="s1">call.message.answer(</span><span class="s4">&quot;Вы выбрали Подписку на 1 месяц. Теперь выберите валюту для оплаты подписки&quot;</span><span class="s0">,</span>
+                                  <span class="s1">reply_markup=markupmenu1)</span>
+    <span class="s0">elif </span><span class="s1">call.data == </span><span class="s4">'back1'</span><span class="s1">:</span>
+        <span class="s0">await </span><span class="s1">call.message.delete()</span>
+
+        <span class="s2"># 3 месяца подписки</span>
+    <span class="s0">elif </span><span class="s1">call.data == </span><span class="s4">'buytime3'</span><span class="s1">:</span>
+        <span class="s1">markupmenu1 = types.InlineKeyboardMarkup(resize_keyboard=</span><span class="s0">True</span><span class="s1">)</span>
+        <span class="s1">rub = types.KeyboardButton(</span><span class="s4">&quot;Рубли&quot;</span><span class="s0">, </span><span class="s1">callback_data=</span><span class="s4">&quot;rub3&quot;</span><span class="s1">)</span>
+        <span class="s1">eur = types.KeyboardButton(</span><span class="s4">&quot;Евро&quot;</span><span class="s0">, </span><span class="s1">callback_data=</span><span class="s4">&quot;eur3&quot;</span><span class="s1">)</span>
+        <span class="s1">bk = types.KeyboardButton(</span><span class="s4">'⬅'</span><span class="s0">, </span><span class="s1">callback_data=</span><span class="s4">'back1'</span><span class="s1">)</span>
+        <span class="s1">markupmenu1.add(rub</span><span class="s0">, </span><span class="s1">eur</span><span class="s0">, </span><span class="s1">bk)</span>
+        <span class="s0">await </span><span class="s1">call.message.answer(</span>
+            <span class="s4">&quot;Вы выбрали Подписку на 3 месяца. Теперь выберите валюту для оплаты подписки&quot;</span><span class="s0">,</span>
+            <span class="s1">reply_markup=markupmenu1)</span>
+    <span class="s0">elif </span><span class="s1">call.data == </span><span class="s4">'back1'</span><span class="s1">:</span>
+        <span class="s0">await </span><span class="s1">call.message.delete()</span>
+
+        <span class="s2"># 6 месяцев подписки</span>
+    <span class="s0">elif </span><span class="s1">call.data == </span><span class="s4">'buytime6'</span><span class="s1">:</span>
+        <span class="s1">markupmenu1 = types.InlineKeyboardMarkup(resize_keyboard=</span><span class="s0">True</span><span class="s1">)</span>
+        <span class="s1">rub = types.KeyboardButton(</span><span class="s4">&quot;Рубли&quot;</span><span class="s0">, </span><span class="s1">callback_data=</span><span class="s4">&quot;rub6&quot;</span><span class="s1">)</span>
+        <span class="s1">eur = types.KeyboardButton(</span><span class="s4">&quot;Евро&quot;</span><span class="s0">, </span><span class="s1">callback_data=</span><span class="s4">&quot;eur6&quot;</span><span class="s1">)</span>
+        <span class="s1">bk = types.KeyboardButton(</span><span class="s4">'⬅'</span><span class="s0">, </span><span class="s1">callback_data=</span><span class="s4">'back1'</span><span class="s1">)</span>
+        <span class="s1">markupmenu1.add(rub</span><span class="s0">, </span><span class="s1">eur</span><span class="s0">, </span><span class="s1">bk)</span>
+        <span class="s0">await </span><span class="s1">call.message.answer(</span>
+            <span class="s4">&quot;Вы выбрали Подписку на 6 месяцев. Теперь выберите валюту для оплаты подписки&quot;</span><span class="s0">,</span>
+            <span class="s1">reply_markup=markupmenu1)</span>
+    <span class="s0">elif </span><span class="s1">call.data == </span><span class="s4">'back1'</span><span class="s1">:</span>
+        <span class="s0">await </span><span class="s1">call.message.delete()</span>
+        <span class="s2"># оплата подписки 1 месяц (руб)</span>
+    <span class="s0">if </span><span class="s1">config.PAYMENTS_TOKEN.split(</span><span class="s4">':'</span><span class="s1">)[</span><span class="s3">1</span><span class="s1">] == </span><span class="s4">'TEST' </span><span class="s0">and </span><span class="s1">call.data == </span><span class="s4">'rub1'</span><span class="s1">:</span>
+        <span class="s1">markupmenur1 = types.InlineKeyboardMarkup (resize_keyboard=</span><span class="s0">True</span><span class="s1">)</span>
+        <span class="s1">bkr1 = types.KeyboardButton(</span><span class="s4">'⬅'</span><span class="s0">, </span><span class="s1">callback_data=</span><span class="s4">'backr1'</span><span class="s1">)</span>
+        <span class="s1">Payr1 = types.KeyboardButton(</span><span class="s4">'Оплатить'</span><span class="s0">, </span><span class="s1">pay=</span><span class="s0">True</span><span class="s1">)</span>
+        <span class="s1">markupmenur1.add(Payr1</span><span class="s0">, </span><span class="s1">bkr1)</span>
+        <span class="s1">amount = PRICE.PRICE1.amount</span>
+        <span class="s0">await </span><span class="s1">bot.send_invoice(call.message.chat.id</span><span class="s0">,</span>
+            <span class="s1">title=</span><span class="s4">&quot;Подписка на Закрытую группу&quot;</span><span class="s0">,</span>
+            <span class="s1">description=</span><span class="s4">&quot;Активация подписки&quot;</span><span class="s0">,</span>
+            <span class="s1">provider_token=config.PAYMENTS_TOKEN</span><span class="s0">,</span>
+            <span class="s1">currency=</span><span class="s4">&quot;RUB&quot;</span><span class="s0">,</span>
+            <span class="s1">photo_url=</span><span class="s4">&quot;https://sun9-37.userapi.com/impg/U91M8UnuxJv37TiSXJ19qh4gCkdZJp31WATrIg/UVGwNoMJXqQ.jpg?size=320x213&amp;quality=96&amp;sign=7cef1b549b14013701feebf2defde743&amp;c_uniq_tag=5VpH3wDgr1rU7z7g-_QJ4nXfFLgg-h37yz2rhdkB12M&amp;type=album&quot;</span>
+                      <span class="s4">&quot;+&quot;</span><span class="s0">,</span>
+            <span class="s1">photo_width=</span><span class="s3">320</span><span class="s0">,</span>
+            <span class="s1">photo_height=</span><span class="s3">213</span><span class="s0">,</span>
+            <span class="s1">photo_size=</span><span class="s3">320</span><span class="s0">,</span>
+            <span class="s1">is_flexible=</span><span class="s0">False,</span>
+            <span class="s1">prices=[LabeledPrice(label=</span><span class="s4">'Стоимость подписки'</span><span class="s0">, </span><span class="s1">amount=int(amount))]</span><span class="s0">,</span>
+            <span class="s1">start_parameter=</span><span class="s4">&quot;unique-string&quot;</span><span class="s0">,</span>
+            <span class="s1">payload=</span><span class="s4">&quot;test-invoice-payload&quot;</span><span class="s0">, </span><span class="s1">reply_markup=markupmenur1)</span>
+        <span class="s0">await </span><span class="s1">call.message.answer(call.message.chat.id</span><span class="s0">, </span><span class="s4">&quot;Вернуться назад&quot;</span><span class="s0">, </span><span class="s1">reply_markup=markupmenur1)</span>
+    <span class="s0">elif </span><span class="s1">call.data == </span><span class="s4">'backr1'</span><span class="s1">:</span>
+        <span class="s0">await </span><span class="s1">call.message.delete()</span>
+        <span class="s2"># оплата подписки 1 месяц (евро)</span>
+    <span class="s0">if </span><span class="s1">(config.PAYMENTS_TOKEN.split(</span><span class="s4">':'</span><span class="s1">)[</span><span class="s3">1</span><span class="s1">] == </span><span class="s4">'TEST' </span><span class="s0">and </span><span class="s1">call.data == </span><span class="s4">'eur1'</span><span class="s1">):</span>
+        <span class="s1">markupmenue1 = types.InlineKeyboardMarkup(resize_keyboard=</span><span class="s0">True</span><span class="s1">)</span>
+        <span class="s1">bke1 = types.KeyboardButton(</span><span class="s4">'⬅'</span><span class="s0">, </span><span class="s1">callback_data=</span><span class="s4">'backe1'</span><span class="s1">)</span>
+        <span class="s1">Paye1 = types.KeyboardButton(</span><span class="s4">'Оплатить'</span><span class="s0">, </span><span class="s1">pay=</span><span class="s0">True</span><span class="s1">)</span>
+        <span class="s1">markupmenue1.add(Paye1</span><span class="s0">, </span><span class="s1">bke1)</span>
+        <span class="s1">amount = PRICE.PRICE2.amount</span>
+        <span class="s0">await </span><span class="s1">bot.send_invoice(call.message.chat.id</span><span class="s0">, </span><span class="s1">title=</span><span class="s4">&quot;Подписка на Закрытую группу&quot;</span><span class="s0">,</span>
+                               <span class="s1">description=</span><span class="s4">&quot;Активация подписки&quot;</span><span class="s0">,</span>
+                               <span class="s1">provider_token=config.PAYMENTS_TOKEN</span><span class="s0">,</span>
+                               <span class="s1">currency=</span><span class="s4">&quot;EUR&quot;</span><span class="s0">,</span>
+                               <span class="s1">photo_url=</span><span class="s4">&quot;https://sun9-37.userapi.com/impg/U91M8UnuxJv37TiSXJ19qh4gCkdZJp31WATrIg/UVGwNoMJXqQ.jpg?size=320x213&amp;quality=96&amp;sign=7cef1b549b14013701feebf2defde743&amp;c_uniq_tag=5VpH3wDgr1rU7z7g-_QJ4nXfFLgg-h37yz2rhdkB12M&amp;type=album&quot;</span>
+                                         <span class="s4">&quot;+&quot;</span><span class="s0">,</span>
+                               <span class="s1">photo_width=</span><span class="s3">320</span><span class="s0">,</span>
+                               <span class="s1">photo_height=</span><span class="s3">213</span><span class="s0">,</span>
+                               <span class="s1">photo_size=</span><span class="s3">320</span><span class="s0">,</span>
+                               <span class="s1">is_flexible=</span><span class="s0">False,</span>
+                               <span class="s1">prices=[LabeledPrice(label=</span><span class="s4">'Стоимость подписки'</span><span class="s0">, </span><span class="s1">amount=int(amount))]</span><span class="s0">,</span>
+                               <span class="s1">start_parameter=</span><span class="s4">&quot;unique-string&quot;</span><span class="s0">,</span>
+                               <span class="s1">payload=</span><span class="s4">&quot;test-invoice-payload&quot;</span><span class="s0">, </span><span class="s1">reply_markup=markupmenue1)</span>
+        <span class="s0">await </span><span class="s1">call.message.answer(</span><span class="s4">&quot;Вернуться назад&quot;</span><span class="s0">, </span><span class="s1">reply_markup=markupmenue1)</span>
+    <span class="s0">elif </span><span class="s1">call.data == </span><span class="s4">'backe1'</span><span class="s1">:</span>
+        <span class="s0">await </span><span class="s1">call.message.delete()</span>
+
+        <span class="s2"># оплата подписки 3 месяц (руб)</span>
+    <span class="s0">if </span><span class="s1">(config.PAYMENTS_TOKEN.split(</span><span class="s4">':'</span><span class="s1">)[</span><span class="s3">1</span><span class="s1">] == </span><span class="s4">'TEST' </span><span class="s0">and </span><span class="s1">call.data == </span><span class="s4">'rub3'</span><span class="s1">):</span>
+        <span class="s1">markupmenur3 = types.InlineKeyboardMarkup(resize_keyboard=</span><span class="s0">True</span><span class="s1">)</span>
+        <span class="s1">bkr1 = types.KeyboardButton(</span><span class="s4">'⬅'</span><span class="s0">, </span><span class="s1">callback_data=</span><span class="s4">'backr1'</span><span class="s1">)</span>
+        <span class="s1">Payr1 = types.KeyboardButton(</span><span class="s4">'Оплатить'</span><span class="s0">, </span><span class="s1">pay=</span><span class="s0">True</span><span class="s1">)</span>
+        <span class="s1">markupmenur3.add(Payr1</span><span class="s0">, </span><span class="s1">bkr1)</span>
+        <span class="s1">amount = PRICE.PRICE3.amount</span>
+        <span class="s0">await </span><span class="s1">bot.send_invoice(call.message.chat.id</span><span class="s0">,</span>
+                               <span class="s1">title=</span><span class="s4">&quot;Подписка на Закрытую группу&quot;</span><span class="s0">,</span>
+                               <span class="s1">description=</span><span class="s4">&quot;Активация подписки&quot;</span><span class="s0">,</span>
+                               <span class="s1">provider_token=config.PAYMENTS_TOKEN</span><span class="s0">,</span>
+                               <span class="s1">currency=</span><span class="s4">&quot;RUB&quot;</span><span class="s0">,</span>
+                               <span class="s1">photo_url=</span><span class="s4">&quot;https://sun9-37.userapi.com/impg/U91M8UnuxJv37TiSXJ19qh4gCkdZJp31WATrIg/UVGwNoMJXqQ.jpg?size=320x213&amp;quality=96&amp;sign=7cef1b549b14013701feebf2defde743&amp;c_uniq_tag=5VpH3wDgr1rU7z7g-_QJ4nXfFLgg-h37yz2rhdkB12M&amp;type=album&quot;</span>
+                                         <span class="s4">&quot;+&quot;</span><span class="s0">,</span>
+                               <span class="s1">photo_width=</span><span class="s3">320</span><span class="s0">,</span>
+                               <span class="s1">photo_height=</span><span class="s3">213</span><span class="s0">,</span>
+                               <span class="s1">photo_size=</span><span class="s3">320</span><span class="s0">,</span>
+                               <span class="s1">is_flexible=</span><span class="s0">False,</span>
+                               <span class="s1">prices=[LabeledPrice(label=</span><span class="s4">'Стоимость подписки'</span><span class="s0">, </span><span class="s1">amount=int(amount))]</span><span class="s0">,</span>
+                               <span class="s1">start_parameter=</span><span class="s4">&quot;unique-string&quot;</span><span class="s0">,</span>
+                               <span class="s1">payload=</span><span class="s4">&quot;test-invoice-payload&quot;</span><span class="s0">, </span><span class="s1">reply_markup=markupmenur3)</span>
+        <span class="s0">await </span><span class="s1">call.message.answer(</span><span class="s4">&quot;Вернуться назад&quot;</span><span class="s0">, </span><span class="s1">reply_markup=markupmenur3)</span>
+    <span class="s0">elif </span><span class="s1">call.data == </span><span class="s4">'backr1'</span><span class="s1">:</span>
+        <span class="s0">await </span><span class="s1">call.message.delete()</span>
+        <span class="s2"># оплата подписки 6 месяцев (руб)</span>
+    <span class="s0">if </span><span class="s1">(config.PAYMENTS_TOKEN.split(</span><span class="s4">':'</span><span class="s1">)[</span><span class="s3">1</span><span class="s1">] == </span><span class="s4">'TEST' </span><span class="s0">and </span><span class="s1">call.data == </span><span class="s4">'rub6'</span><span class="s1">):</span>
+        <span class="s1">markupmenur6 = types.InlineKeyboardMarkup(resize_keyboard=</span><span class="s0">True</span><span class="s1">)</span>
+        <span class="s1">bkr1 = types.KeyboardButton(</span><span class="s4">'⬅'</span><span class="s0">, </span><span class="s1">callback_data=</span><span class="s4">'backr1'</span><span class="s1">)</span>
+        <span class="s1">Payr1 = types.KeyboardButton(</span><span class="s4">'Оплатить'</span><span class="s0">, </span><span class="s1">pay=</span><span class="s0">True</span><span class="s1">)</span>
+        <span class="s1">markupmenur6.add(Payr1</span><span class="s0">, </span><span class="s1">bkr1)</span>
+        <span class="s1">amount = PRICE.PRICE6.amount</span>
+        <span class="s0">await </span><span class="s1">bot.send_invoice(call.message.chat.id</span><span class="s0">,</span>
+                               <span class="s1">title=</span><span class="s4">&quot;Подписка на Закрытую группу&quot;</span><span class="s0">,</span>
+                               <span class="s1">description=</span><span class="s4">&quot;Активация подписки&quot;</span><span class="s0">,</span>
+                               <span class="s1">provider_token=config.PAYMENTS_TOKEN</span><span class="s0">,</span>
+                               <span class="s1">currency=</span><span class="s4">&quot;RUB&quot;</span><span class="s0">,</span>
+                               <span class="s1">photo_url=</span><span class="s4">&quot;https://sun9-37.userapi.com/impg/U91M8UnuxJv37TiSXJ19qh4gCkdZJp31WATrIg/UVGwNoMJXqQ.jpg?size=320x213&amp;quality=96&amp;sign=7cef1b549b14013701feebf2defde743&amp;c_uniq_tag=5VpH3wDgr1rU7z7g-_QJ4nXfFLgg-h37yz2rhdkB12M&amp;type=album&quot;</span>
+                                         <span class="s4">&quot;+&quot;</span><span class="s0">,</span>
+                               <span class="s1">photo_width=</span><span class="s3">320</span><span class="s0">,</span>
+                               <span class="s1">photo_height=</span><span class="s3">213</span><span class="s0">,</span>
+                               <span class="s1">photo_size=</span><span class="s3">320</span><span class="s0">,</span>
+                               <span class="s1">is_flexible=</span><span class="s0">False,</span>
+                               <span class="s1">prices=[LabeledPrice(label=</span><span class="s4">'Стоимость подписки'</span><span class="s0">, </span><span class="s1">amount=int(amount))]</span><span class="s0">,</span>
+                               <span class="s1">start_parameter=</span><span class="s4">&quot;unique-string&quot;</span><span class="s0">,</span>
+                               <span class="s1">payload=</span><span class="s4">&quot;test-invoice-payload&quot;</span><span class="s0">, </span><span class="s1">reply_markup=markupmenur6)</span>
+        <span class="s0">await </span><span class="s1">call.message.answer(</span><span class="s4">&quot;Вернуться назад&quot;</span><span class="s0">, </span><span class="s1">reply_markup=markupmenur6)</span>
+    <span class="s0">elif </span><span class="s1">call.data == </span><span class="s4">'backr1'</span><span class="s1">:</span>
+        <span class="s0">await </span><span class="s1">call.message.delete()</span>
+
+        <span class="s2"># pre checout (must be answered in 10 seconds)</span>
+
+<span class="s1">@dp.pre_checkout_query_handler(</span><span class="s0">lambda </span><span class="s1">query: </span><span class="s0">True</span><span class="s1">)</span>
+<span class="s0">async def </span><span class="s1">pre_checkout_query(pre_checkout_q: types.PreCheckoutQuery):</span>
+    <span class="s0">await </span><span class="s1">bot.answer_pre_checkout_query(pre_checkout_q.id</span><span class="s0">, </span><span class="s1">ok=</span><span class="s0">True</span><span class="s1">)</span>
+
+    <span class="s2"># successful payment</span>
+<span class="s1">@dp.message_handler(content_types=ContentType.SUCCESSFUL_PAYMENT)</span>
+<span class="s0">async def </span><span class="s1">successful_payment(message: types.Message):</span>
+    <span class="s1">print(</span><span class="s4">&quot;SUCCESSFUL PAYMENT:&quot;</span><span class="s1">)</span>
+    <span class="s1">payment_info = message.successful_payment.to_python()</span>
+    <span class="s0">for </span><span class="s1">k</span><span class="s0">, </span><span class="s1">v </span><span class="s0">in </span><span class="s1">payment_info.items():</span>
+        <span class="s1">print(</span><span class="s4">f&quot;</span><span class="s0">{</span><span class="s1">k</span><span class="s0">}</span><span class="s4">=</span><span class="s0">{</span><span class="s1">v</span><span class="s0">}</span><span class="s4">&quot;</span><span class="s1">)</span>
+    <span class="s0">await </span><span class="s1">message.answer(text=</span><span class="s4">f&quot;</span><span class="s0">{</span><span class="s1">k</span><span class="s0">}</span><span class="s4">=</span><span class="s0">{</span><span class="s1">v</span><span class="s0">}</span><span class="s4">&quot; </span><span class="s1">+ </span><span class="s4">'</span><span class="s0">\n </span><span class="s4">Это номер вашей квитанции!</span><span class="s0">\n </span><span class="s4">Сохраните это сообщение в избранное 😉'</span><span class="s1">)</span>
+    <span class="s0">await </span><span class="s1">message.answer(</span><span class="s4">f&quot;Платёж на сумму </span><span class="s0">{</span><span class="s1">message.successful_payment.total_amount // </span><span class="s3">100</span><span class="s0">} {</span><span class="s1">message.successful_payment.currency</span><span class="s0">} </span><span class="s4">прошёл успешно!!!</span><span class="s0">\n </span><span class="s4">Вы можете проверить статус своей подписки в кнопке Статус подписки &quot;</span><span class="s1">)</span>
+    <span class="s0">await </span><span class="s1">message.answer(</span><span class="s4">&quot;Это ваша ссылка для входа в закрытую группу 😊. Удачи!&quot; </span><span class="s1">+ config.GROUP_URL)</span>
+    <span class="s1">count = (message.successful_payment.total_amount // </span><span class="s3">100</span><span class="s1">)</span>
+    <span class="s1">print(count)</span>
+
+
+
+
+    <span class="s0">if </span><span class="s1">count == </span><span class="s3">100 </span><span class="s0">or </span><span class="s1">count == </span><span class="s3">1</span><span class="s1">:</span>
+        <span class="s1">date1 = datetime.now()</span>
+        <span class="s1">add1 = timedelta(days=</span><span class="s3">30</span><span class="s1">)</span>
+        <span class="s1">date2 = date1 + add1</span>
+        <span class="s1">print(date2)</span>
+        <span class="s1">subs = </span><span class="s3">1</span>
+        <span class="s1">subs_info = </span><span class="s4">f&quot;</span><span class="s0">{</span><span class="s1">k</span><span class="s0">}</span><span class="s4">=</span><span class="s0">{</span><span class="s1">v</span><span class="s0">}</span><span class="s4">&quot;</span>
+
+        <span class="s1">connect = sqlite3.connect(</span><span class="s4">&quot;Datas.db&quot;</span><span class="s1">)</span>
+        <span class="s1">cursor = connect.cursor()</span>
+
+        <span class="s1">user_id = message.from_user.id</span>
+        <span class="s1">user_name = message.from_user.username</span>
+        <span class="s1">user_firstname = message.from_user.first_name</span>
+        <span class="s1">cursor.execute(</span><span class="s4">&quot;&quot;&quot;INSERT OR IGNORE INTO users  
+                (tg_users_id, users_name, users_firstname, money_rub, DATE_of_Pay, DATE_of_end_subs, Subs_status, SUBS_INFO)  
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)&quot;&quot;&quot;</span><span class="s0">,</span>
+                       <span class="s2"># ? - плейсхолдеры. Просто занимают место, а в них летят функции f' #столбцы таблицы</span>
+                       <span class="s1">(</span><span class="s4">f&quot;</span><span class="s0">{</span><span class="s1">user_id</span><span class="s0">}</span><span class="s4">&quot;</span><span class="s0">,</span><span class="s4">&quot;@&quot; </span><span class="s1">+ </span><span class="s4">f&quot;</span><span class="s0">{</span><span class="s1">user_name</span><span class="s0">}</span><span class="s4">&quot;</span><span class="s0">, </span><span class="s4">f&quot;</span><span class="s0">{</span><span class="s1">user_firstname</span><span class="s0">}</span><span class="s4">&quot;</span><span class="s0">, </span><span class="s4">f&quot;</span><span class="s0">{</span><span class="s1">count</span><span class="s0">}</span><span class="s4">&quot;</span><span class="s0">, </span><span class="s4">f&quot;</span><span class="s0">{</span><span class="s1">date1</span><span class="s0">}</span><span class="s4">&quot;</span><span class="s0">, </span><span class="s4">f&quot;</span><span class="s0">{</span><span class="s1">date2</span><span class="s0">}</span><span class="s4">&quot;</span><span class="s0">, </span><span class="s4">f&quot;</span><span class="s0">{</span><span class="s1">subs</span><span class="s0">}</span><span class="s4">&quot;</span><span class="s0">, </span><span class="s4">f&quot;</span><span class="s0">{</span><span class="s1">subs_info</span><span class="s0">}</span><span class="s4">&quot;</span><span class="s1">))</span>
+        <span class="s1">cursor.execute(</span><span class="s4">&quot;&quot;&quot;REPLACE INTO users  
+                (tg_users_id, users_name, users_firstname, money_rub, DATE_of_Pay, DATE_of_end_subs, Subs_status, SUBS_INFO)  
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)&quot;&quot;&quot;</span><span class="s0">,</span>
+                       <span class="s2"># ? - плейсхолдеры. Просто занимают место, а в них летят функции f' #столбцы таблицы</span>
+                       <span class="s1">(</span><span class="s4">f&quot;</span><span class="s0">{</span><span class="s1">user_id</span><span class="s0">}</span><span class="s4">&quot;</span><span class="s0">, </span><span class="s4">&quot;@&quot; </span><span class="s1">+ </span><span class="s4">f&quot;</span><span class="s0">{</span><span class="s1">user_name</span><span class="s0">}</span><span class="s4">&quot;</span><span class="s0">, </span><span class="s4">f&quot;</span><span class="s0">{</span><span class="s1">user_firstname</span><span class="s0">}</span><span class="s4">&quot;</span><span class="s0">, </span><span class="s4">f&quot;</span><span class="s0">{</span><span class="s1">count</span><span class="s0">}</span><span class="s4">&quot;</span><span class="s0">, </span><span class="s4">f&quot;</span><span class="s0">{</span><span class="s1">date1</span><span class="s0">}</span><span class="s4">&quot;</span><span class="s0">, </span><span class="s4">f&quot;</span><span class="s0">{</span><span class="s1">date2</span><span class="s0">}</span><span class="s4">&quot;</span><span class="s0">,  </span><span class="s4">f&quot;</span><span class="s0">{</span><span class="s1">subs</span><span class="s0">}</span><span class="s4">&quot;</span><span class="s0">, </span><span class="s4">f&quot;</span><span class="s0">{</span><span class="s1">subs_info</span><span class="s0">}</span><span class="s4">&quot;</span><span class="s1">))</span>
+        <span class="s2"># имя функций, которые дают сюда значения</span>
+
+        <span class="s1">connect.commit()</span>
+        <span class="s1">connect.close()</span>
+
+
+
+    <span class="s0">elif </span><span class="s1">count == </span><span class="s3">300 </span><span class="s0">or </span><span class="s1">count == </span><span class="s3">3</span><span class="s1">:</span>
+        <span class="s1">date1 = datetime.now()</span>
+        <span class="s1">add3 = timedelta(days=</span><span class="s3">60</span><span class="s1">)</span>
+        <span class="s1">date2 = date1 + add3</span>
+        <span class="s1">print(date2)</span>
+        <span class="s1">subs = </span><span class="s3">1</span>
+        <span class="s1">subs_info = </span><span class="s4">f&quot;</span><span class="s0">{</span><span class="s1">k</span><span class="s0">}</span><span class="s4">=</span><span class="s0">{</span><span class="s1">v</span><span class="s0">}</span><span class="s4">&quot;</span>
+
+        <span class="s1">connect = sqlite3.connect(</span><span class="s4">&quot;Datas.db&quot;</span><span class="s1">)</span>
+        <span class="s1">cursor = connect.cursor()</span>
+        <span class="s1">user_id = message.from_user.id</span>
+        <span class="s1">user_name = message.from_user.username</span>
+        <span class="s1">user_firstname = message.from_user.first_name</span>
+        <span class="s1">cursor.execute(</span><span class="s4">&quot;&quot;&quot;INSERT OR IGNORE INTO users  
+                (tg_users_id, users_name, users_firstname, money_rub, DATE_of_Pay, DATE_of_end_subs, Subs_status, SUBS_INFO)  
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)&quot;&quot;&quot;</span><span class="s0">,</span>
+                       <span class="s2"># ? - плейсхолдеры. Просто занимают место, а в них летят функции f' #столбцы таблицы</span>
+                       <span class="s1">(</span><span class="s4">f&quot;</span><span class="s0">{</span><span class="s1">user_id</span><span class="s0">}</span><span class="s4">&quot;</span><span class="s0">, </span><span class="s4">&quot;@&quot; </span><span class="s1">+ </span><span class="s4">f&quot;</span><span class="s0">{</span><span class="s1">user_name</span><span class="s0">}</span><span class="s4">&quot;</span><span class="s0">, </span><span class="s4">f&quot;</span><span class="s0">{</span><span class="s1">user_firstname</span><span class="s0">}</span><span class="s4">&quot;</span><span class="s0">, </span><span class="s4">f&quot;</span><span class="s0">{</span><span class="s1">count</span><span class="s0">}</span><span class="s4">&quot;</span><span class="s0">, </span><span class="s4">f&quot;</span><span class="s0">{</span><span class="s1">date1</span><span class="s0">}</span><span class="s4">&quot;</span><span class="s0">, </span><span class="s4">f&quot;</span><span class="s0">{</span><span class="s1">date2</span><span class="s0">}</span><span class="s4">&quot;</span><span class="s0">, </span><span class="s4">f&quot;</span><span class="s0">{</span><span class="s1">subs</span><span class="s0">}</span><span class="s4">&quot;</span><span class="s0">, </span><span class="s4">f&quot;</span><span class="s0">{</span><span class="s1">subs_info</span><span class="s0">}</span><span class="s4">&quot;</span><span class="s1">))</span>
+        <span class="s1">cursor.execute(</span><span class="s4">&quot;&quot;&quot;REPLACE INTO users  
+                (tg_users_id, users_name, users_firstname, money_rub, DATE_of_Pay, DATE_of_end_subs, Subs_status, SUBS_INFO)  
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)&quot;&quot;&quot;</span><span class="s0">,</span>
+                       <span class="s2"># ? - плейсхолдеры. Просто занимают место, а в них летят функции f' #столбцы таблицы</span>
+                       <span class="s1">(</span><span class="s4">f&quot;</span><span class="s0">{</span><span class="s1">user_id</span><span class="s0">}</span><span class="s4">&quot;</span><span class="s0">, </span><span class="s4">&quot;@&quot; </span><span class="s1">+ </span><span class="s4">f&quot;</span><span class="s0">{</span><span class="s1">user_name</span><span class="s0">}</span><span class="s4">&quot;</span><span class="s0">, </span><span class="s4">f&quot;</span><span class="s0">{</span><span class="s1">user_firstname</span><span class="s0">}</span><span class="s4">&quot;</span><span class="s0">, </span><span class="s4">f&quot;</span><span class="s0">{</span><span class="s1">count</span><span class="s0">}</span><span class="s4">&quot;</span><span class="s0">, </span><span class="s4">f&quot;</span><span class="s0">{</span><span class="s1">date1</span><span class="s0">}</span><span class="s4">&quot;</span><span class="s0">, </span><span class="s4">f&quot;</span><span class="s0">{</span><span class="s1">date2</span><span class="s0">}</span><span class="s4">&quot;</span><span class="s0">, </span><span class="s4">f&quot;</span><span class="s0">{</span><span class="s1">subs</span><span class="s0">}</span><span class="s4">&quot;</span><span class="s0">, </span><span class="s4">f&quot;</span><span class="s0">{</span><span class="s1">subs_info</span><span class="s0">}</span><span class="s4">&quot;</span><span class="s1">))</span>
+        <span class="s2"># имя функций, которые дают сюда значения</span>
+
+        <span class="s1">connect.commit()</span>
+        <span class="s1">connect.close()</span>
+
+        <span class="s1">connect.close()</span>
+    <span class="s0">elif </span><span class="s1">count == </span><span class="s3">600 </span><span class="s0">or </span><span class="s1">count == </span><span class="s3">6</span><span class="s1">:</span>
+        <span class="s1">date1 = datetime.now()</span>
+        <span class="s1">add6 = timedelta(days=</span><span class="s3">90</span><span class="s1">)</span>
+        <span class="s1">date2 = date1 + add6</span>
+        <span class="s1">print(date2)</span>
+        <span class="s1">subs = </span><span class="s3">1</span>
+        <span class="s1">subs_info = </span><span class="s4">f&quot;</span><span class="s0">{</span><span class="s1">k</span><span class="s0">}</span><span class="s4">=</span><span class="s0">{</span><span class="s1">v</span><span class="s0">}</span><span class="s4">&quot;</span>
+
+        <span class="s1">connect = sqlite3.connect(</span><span class="s4">&quot;Datas.db&quot;</span><span class="s1">)</span>
+        <span class="s1">cursor = connect.cursor()</span>
+        <span class="s1">user_id = message.from_user.id</span>
+        <span class="s1">user_name = message.from_user.username</span>
+        <span class="s1">user_firstname = message.from_user.first_name</span>
+        <span class="s1">cursor.execute(</span><span class="s4">&quot;&quot;&quot;INSERT OR IGNORE INTO users  
+        (tg_users_id, users_name, users_firstname, money_rub, DATE_of_Pay, DATE_of_end_subs, Subs_status, SUBS_INFO)  
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)&quot;&quot;&quot;</span><span class="s0">, </span><span class="s2"># ? - плейсхолдеры. Просто занимают место, а в них летят функции f' #столбцы таблицы</span>
+                   <span class="s1">(</span><span class="s4">f&quot;</span><span class="s0">{</span><span class="s1">user_id</span><span class="s0">}</span><span class="s4">&quot;</span><span class="s0">,</span><span class="s4">&quot;@&quot; </span><span class="s1">+ </span><span class="s4">f&quot;</span><span class="s0">{</span><span class="s1">user_name</span><span class="s0">}</span><span class="s4">&quot;</span><span class="s0">, </span><span class="s4">f&quot;</span><span class="s0">{</span><span class="s1">user_firstname</span><span class="s0">}</span><span class="s4">&quot;</span><span class="s0">, </span><span class="s4">f&quot;</span><span class="s0">{</span><span class="s1">count</span><span class="s0">}</span><span class="s4">&quot;</span><span class="s0">, </span><span class="s4">f&quot;</span><span class="s0">{</span><span class="s1">date1</span><span class="s0">}</span><span class="s4">&quot;</span><span class="s0">, </span><span class="s4">f&quot;</span><span class="s0">{</span><span class="s1">date2</span><span class="s0">}</span><span class="s4">&quot;</span><span class="s0">, </span><span class="s4">f&quot;</span><span class="s0">{</span><span class="s1">subs</span><span class="s0">}</span><span class="s4">&quot;</span><span class="s0">, </span><span class="s4">f&quot;</span><span class="s0">{</span><span class="s1">subs_info</span><span class="s0">}</span><span class="s4">&quot;</span><span class="s1">))</span>
+        <span class="s1">cursor.execute(</span><span class="s4">&quot;&quot;&quot;REPLACE INTO users  
+        (tg_users_id, users_name, users_firstname, money_rub, DATE_of_Pay, DATE_of_end_subs, Subs_status, SUBS_INFO)  
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)&quot;&quot;&quot;</span><span class="s0">,  </span><span class="s2"># ? - плейсхолдеры. Просто занимают место, а в них летят функции f' #столбцы таблицы</span>
+                   <span class="s1">(</span><span class="s4">f&quot;</span><span class="s0">{</span><span class="s1">user_id</span><span class="s0">}</span><span class="s4">&quot;</span><span class="s0">,</span><span class="s4">&quot;@&quot; </span><span class="s1">+ </span><span class="s4">f&quot;</span><span class="s0">{</span><span class="s1">user_name</span><span class="s0">}</span><span class="s4">&quot;</span><span class="s0">, </span><span class="s4">f&quot;</span><span class="s0">{</span><span class="s1">user_firstname</span><span class="s0">}</span><span class="s4">&quot;</span><span class="s0">, </span><span class="s4">f&quot;</span><span class="s0">{</span><span class="s1">count</span><span class="s0">}</span><span class="s4">&quot;</span><span class="s0">, </span><span class="s4">f&quot;</span><span class="s0">{</span><span class="s1">date1</span><span class="s0">}</span><span class="s4">&quot;</span><span class="s0">, </span><span class="s4">f&quot;</span><span class="s0">{</span><span class="s1">date2</span><span class="s0">}</span><span class="s4">&quot;</span><span class="s0">, </span><span class="s4">f&quot;</span><span class="s0">{</span><span class="s1">subs</span><span class="s0">}</span><span class="s4">&quot;</span><span class="s0">, </span><span class="s4">f&quot;</span><span class="s0">{</span><span class="s1">subs_info</span><span class="s0">}</span><span class="s4">&quot;</span><span class="s1">))</span>
+      <span class="s2"># имя функций, которые дают сюда значения</span>
+
+        <span class="s1">connect.commit()</span>
+        <span class="s1">connect.close()</span>
+
+
+
+<span class="s0">async def </span><span class="s1">mai():</span>
+    <span class="s1">task1 = asyncio.create_task(kr())</span>
+    <span class="s1">task2 = asyncio.create_task(kr1())</span>
+    <span class="s1">task3 = asyncio.create_task(kr2())</span>
+    <span class="s1">task4 = asyncio.create_task(successful_payment())</span>
+    <span class="s1">task5 = asyncio.create_task(pre_checkout_query())</span>
+    <span class="s1">task6 = asyncio.create_task(answe())</span>
+    <span class="s1">task7 = asyncio.create_task(cmd_handler())</span>
+    <span class="s1">task8 = asyncio.create_task(join_chat_members())</span>
+    <span class="s1">task9 = asyncio.create_task(pre_checkout_query())</span>
+
+    <span class="s0">await </span><span class="s1">task1</span>
+    <span class="s0">await </span><span class="s1">task2</span>
+    <span class="s0">await </span><span class="s1">task3</span>
+    <span class="s0">await </span><span class="s1">task4</span>
+    <span class="s0">await </span><span class="s1">task5</span>
+    <span class="s0">await </span><span class="s1">task6</span>
+    <span class="s0">await </span><span class="s1">task7</span>
+    <span class="s0">await </span><span class="s1">task8</span>
+    <span class="s0">await </span><span class="s1">task9</span>
+
+<span class="s1">asyncio.run(mai())</span>
+
+<span class="s2"># run long-polling</span>
+<span class="s0">if </span><span class="s1">__name__ == </span><span class="s4">&quot;__main__&quot;</span><span class="s1">:</span>
+    <span class="s1">executor.start_polling(dp</span><span class="s0">, </span><span class="s1">skip_updates=</span><span class="s0">False</span><span class="s1">)</span>
+
+</pre>
+</body>
+</html>
